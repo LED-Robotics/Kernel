@@ -11,14 +11,14 @@ using namespace std;
 std::shared_ptr<OdomChassisController> chassis =
 ChassisControllerBuilder()
 .withMotors(
-    {10, 20}, // Left motors are 1 & 2 (reversed)
-    {-1, -11}    // Right motors are 3 & 4
+    {-10, -20}, // Left motors are 1 & 2 (reversed)
+    {1, 11}    // Right motors are 3 & 4
 )
 // Green gearset, 4 in wheel diam, 11.5 in wheel track
-.withDimensions({AbstractMotor::gearset::green, (5.0 / 3.0)}, {{3.25_in, 19.0_in}, imev5GreenTPR})
+.withDimensions({AbstractMotor::gearset::green, 1.0}, {{4.0_in, 17.25_in}, imev5GreenTPR})
 .withGains(
     {0.001, 0.0, 0.0000},
-    {0.001, 0.0, 0.0000},
+    {0.002, 0.0, 0.0000},
     {0.000, 0.0, 0.0000}
 )
 .withOdometry()
@@ -33,8 +33,8 @@ Motor Catapault2(17);
 Motor Intake1(3);
 // pros::Motor wtf(20);
 
-pros::ADIDigitalIn catapaultTouch{'B'};
-pros::ADIDigitalIn catapaultTouchDown{'A'};
+pros::ADIAnalogIn catapaultTouch{'A'};
+
 
 bool catapultLoading = false;
 
@@ -48,22 +48,11 @@ pros::Imu IMU_(6);
 pros::Controller Garfield(pros::E_CONTROLLER_MASTER); //lasagna
 pros::Controller John(pros::E_CONTROLLER_PARTNER); //ooga booga set hike
 
-pros::Vision vision (9);
-void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
-}
-
 /**
- * Runs initialization code. This occurs as soon as the program is started.
+ * Runs initialization code. This occurs as soon as the program is started penis.
  *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
+ * All other competition modes are blocked by initialize your penis; it is recommended
+ * 
  */
 void initialize() {
 	pros::lcd::initialize();
@@ -82,6 +71,7 @@ void initialize() {
 
 	// FR.set_reversed(true);
     // BR.set_reversed(true);
+    Catapault2.setReversed(true);
 }
 
 /**
@@ -118,11 +108,22 @@ void disabled() {}
 
 // const double inch = 0.106;
 
+void prime() {
+    while(catapaultTouch.get_value() > 1800) {
+        Catapault.controllerSet(0.4);
+        Catapault2.controllerSet(0.4);
+    }
+    Catapault.moveAbsolute(Catapault.getPosition(), 500);
+    Catapault2.moveAbsolute(Catapault2.getPosition(), 500);
+}
+
 void shoot (){
-  Catapault.controllerSet(1.0);
-  if(catapaultTouch.get_value()){
+  while(catapaultTouch.get_value() < 1800) {
+        Catapault.controllerSet(1.0);
+        Catapault2.controllerSet(1.0);
+    }
     Catapault.controllerSet(0.0);
-  }
+    Catapault2.controllerSet(0.0);
 }
 
 
@@ -135,86 +136,16 @@ void Outake(int seconds){
 
 }
 
-// void drive(int distance){
-//     const double INCH_CONSTANT = 0.09794150344116636047315923899847;
-//     distance *= INCH_CONSTANT*360;
+void changeIntake(bool state) {
+    indexer.set_value(state);
+    tindexr.set_value(state);
+}
 
-//     FL.set_encoder_units(pros::E_MOTOR_ENCODER_DEGREES);
-//     BL.set_encoder_units(pros::E_MOTOR_ENCODER_DEGREES);
-//     FR.set_encoder_units(pros::E_MOTOR_ENCODER_DEGREES);
-//     BR.set_encoder_units(pros::E_MOTOR_ENCODER_DEGREES);
-
-//     FL.tare_position();
-//     BL.tare_position();
-//     FR.tare_position();
-//     BR.tare_position();
-
-//     double X = BL.get_position();
-
-//     while(X>distance or X<distance-5){
-//         X = BL.get_position();
-//         FL.move((X-distance)*5);
-//         BL.move((X-distance)*5);
-//         FR.move((X-distance)*5);
-//         BR.move((X-distance)*5);
-//     }
-
-//     FL.move(0);
-//     FR.move(0);
-//     BL.move(0);
-//     BR.move(0);
-// }
-
-
-// void turn(double angle){
-//     const double INCH_CONSTANT = 0.09794150344116636047315923899847;
-
-//     IMU_.tare();
-//     int speed = 90;
-//     double modifier = 1.0;
-//     if(angle < 0) { speed *= -1; }
-// 	double current = 0.0;
-//     angle = abs(angle);
-//     while(current < angle) {
-//         current = abs(IMU_.get_rotation());
-//         modifier = 1.8 - (current / angle) * 1.3;
-//         if(modifier > 1.0) modifier = 1.0;
-
-//         BL.move(speed * modifier);
-//         FL.move(speed * modifier);
-//         BR.move(-speed * modifier);
-//         FR.move(-speed * modifier);
-//         pros::delay(20);
-//     }
-
-//     BL.move(0);
-//     FL.move(0);
-//     BR.move(0);
-//     FR.move(0);
-
-//     // angle /= 2;
-
-//     // IMU_.tare_heading();
-//     // delay(250);
-//     // int Bound = 0;
-
-//     // double X = IMU_.get_heading();
-
-//     // while(X>angle+5 or X<angle-5){
-//     //  X = IMU_.get_heading();
-   
-//     //  FL.move((angle-X)*-0.7);
-//     //  BL.move((angle-X)*-0.7);
-//     //  FR.move((angle-X)*0.7);
-//     //  BR.move((angle-X)*0.7);
-//     //  delay(20);
-//     // }
-
-//     // FL.move(0);
-//     // FR.move(0);
-//     // BL.move(0);
-//     // BR.move(0);
-// }
+void tareAuton() {
+    chassis->setState({0_ft, 0_ft, 0_deg});
+    chassis->stop();
+    chassis->waitUntilSettled();
+}
 
 void changeAlliance(int id) {
     int currentSig{RED_ID};
@@ -233,13 +164,13 @@ void printData() {
             pros::lcd::print(0, "Auton Selected: Standby");
             break;
         case 1:
-            pros::lcd::print(0, "Auton Selected: Longer");
+            pros::lcd::print(0, "Auton Selected: Left");
             break;
         case 2:
-            pros::lcd::print(0, "Auton Selected: ouralliagnceside");
+            pros::lcd::print(0, "Auton Selected: Right");
             break;
         case 3:
-            pros::lcd::print(0, "Auton Selected: oppositealliganceside");
+            pros::lcd::print(0, "Auton Selected: Skills");
             break;
     }
 
@@ -250,7 +181,7 @@ void printData() {
 
 void lcdAutonSelect() {
     autonomousSelected++;
-    if(autonomousSelected > 4)
+    if(autonomousSelected > 3)
         autonomousSelected = 0;
     printData();
 }
@@ -266,27 +197,17 @@ void lcdAllianceSelect() {
     }
     printData();
 }
-void ourAlliganceSide(){     
- Outake(5);
-//  drive(1);
-//  turn(180);
-//  drive(16);
-//  turn(45);
-//  drive(5);
-//  intake(1);
-//  turn(135);
-//  drive(15);
-//  Outake(1);
-//  drive(5);
-//  turn(135);
-//  drive(42);
-//  turn(-45);
-//  drive(20);
-//  intake(1);
+void left(){     
+    tareAuton();
+    chassis->driveToPoint({2.3_ft, 2.0_ft});
+    tareAuton();
+    chassis->turnToAngle(90_deg);
+    prime();
+    shoot();
 
 }
 
-void oppositeAlliganceSide(){
+void right(){
  Outake(5);
 //  drive(1);
 //  turn(180);
@@ -316,8 +237,6 @@ void skills(){
 
 
 }
-void longer(){
-    // drive(2);
 
 
 
@@ -328,42 +247,21 @@ void executeAutonomous() {
         case 0:
             break;
         case 1:
-            longer();
+            left();
             break;
         case 2:
-            ourAlliganceSide();
+            right();
             break;
         case 3:
             skills();
-            break;
-        case 4:
-            oppositeAlliganceSide();
             break;
     }
     return;
 }
 
 void autonomous() {
-    Catapault.setBrakeMode(AbstractMotor::brakeMode::coast);
-    Climb1.setBrakeMode(AbstractMotor::brakeMode::coast);
-    Climb2.setBrakeMode(AbstractMotor::brakeMode::coast);
-    Intake1.setBrakeMode(AbstractMotor::brakeMode::coast);  
+    left();
     
-    
-
-
-    longer();
-
-
-
-    ourAlliganceSide();
-
-
-
-    oppositeAlliganceSide();
-
-
-	skills();
 }
 
 /**
@@ -381,30 +279,24 @@ void autonomous() {
  */
 void teleopCatapult()
     {
-     bool shoot= Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_R2);
-     //Have Button to prime, STOP at limit switch, and fire at a button
-     if(shoot && !catapaultTouchDown.get_new_press() || !catapaultTouch.get_new_press()){
-         Catapault.controllerSet(0.63);
-         Catapault2.controllerSet(0.63);
-     }
-     if(catapaultTouchDown.get_value() || catapaultTouch.get_new_press()){
-         Catapault.controllerSet(0.16);
-         Catapault2.controllerSet(0.16);
-     }
-     if(Garfield.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)){
+    bool shoot= Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_R2);
+    if(shoot) {
         Catapault.controllerSet(1.0);
         Catapault2.controllerSet(1.0);
-        pros::delay(250);
-        Catapault.controllerSet(0.0);
-        Catapault2.controllerSet(0.0);
-     }
-     if(Garfield.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)){
-        Catapault.controllerSet(0.16);
-        Catapault2.controllerSet(0.16);
-     }
+    } else {
+        
+        pros::lcd::print(1, "other: %d", catapaultTouch.get_value());
+        if(catapaultTouch.get_value() > 1800) {
+            Catapault.controllerSet(0.4);
+            Catapault2.controllerSet(0.4);
+        } else {
+            Catapault.moveAbsolute(Catapault.getPosition(), 500);
+            Catapault2.moveAbsolute(Catapault2.getPosition(), 500);
+        }
+    }
     }
 void opcontrol() {
-    John.clear();
+    // John.clear();
     double thresh = 0.1;
     int shoot = 0;
     bool shot = false;
@@ -419,17 +311,9 @@ void opcontrol() {
     Climb2.setBrakeMode(AbstractMotor::brakeMode::coast);
     Catapault.setBrakeMode(AbstractMotor::brakeMode::coast);
     Intake1.setBrakeMode(AbstractMotor::brakeMode::coast);  
-  
-//  float driveDeadzone;
-//  float driveCurveExtent;
-    
-//   controller_analog_e_t DRIVE_X;
-//   controller_analog_e_t DRIVE_Y;
 
 
     while (true) {
-//      double driveX;
-//      double driveY;
 
     x = (double)Garfield.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X) / 127.0;  // /127 to push value between -1.0 and 1.0
     y = (double)Garfield.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y) / 127.0;
@@ -438,103 +322,13 @@ void opcontrol() {
     y = driveCurveExtent * pow(y, 3) + (1- driveCurveExtent) * y;
 
     chassisModel->arcade(y, x, driveDeadzone);
- 
-
-
-        // x = Garfield.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-        // y = Garfield.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
-
-        // FL.move(y*80+x*80);
-        // BL.move(y*80+x*80);
-        // FR.move(y*80-x*80);
-        // BR.move(y*80-x*80);
-
-        // if (abs(x)<thresh){
-        //     x = 0;
-        // }
-
-        // if(abs(y)<thresh){
-        //     y = 0;
-        // }
-        
-        // while(x == 0 && y == 0)
-        // {
-        // FL.brake();
-        // BL.brake();
-        // FR.brake();
-        // BR.brake();
-    
-        // }
-
-
-
-//  double turnVar;
-//  double straightVar;
-
-
-//     turnVar = (double)Garfield.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);//
-//     straightVar = (double)Garfield.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);//
-    
-//     if (fabs(turnVar) < driveDeadzone) {
-//         turnVar = 0.0;
-//     }
-//     if (fabs(straightVar) < driveDeadzone) {
-//         straightVar = 0.0;
-//     }
-//     double completeSpeedLeft = straightVar;
-//     double completeSpeedRight = straightVar;//full speed for going straight/backwards
-    
-//     if (turnVar!=0.0){//If You Want to Turn
-//         if(turnVar>0.0){//Right************************************//
-//             if(straightVar>0.0){//Going Forward
-//                 completeSpeedRight=straightVar-fabs(turnVar);
-//                 if(completeSpeedRight<0.0){
-//                     completeSpeedRight=0.0;
-//                 }
-//             }
-//             else if(straightVar<0.0){//Going Backward
-//                 completeSpeedRight=straightVar+fabs(turnVar);
-//                 if (completeSpeedRight>0.0){
-//                     completeSpeedRight=0.0;
-//                 }
-//             }
-//             else{
-//                 completeSpeedLeft=fabs(turnVar);
-//                 completeSpeedRight=-fabs(turnVar);
-//             }
-//         }
-//         if(turnVar<0.0){//Left**************************************//
-//             if(straightVar>0.0){//Going Forward
-//                 completeSpeedLeft=straightVar-fabs(turnVar);
-//                 if(completeSpeedLeft<0.0){
-//                     completeSpeedLeft=0.0;
-//                 }
-//             }
-//             else if(straightVar<0){//Going Backwards
-//                 completeSpeedLeft=straightVar+fabs(turnVar);
-//                 if(completeSpeedLeft>0.0){
-//                     completeSpeedLeft=0.0;
-//                 }
-//             }
-//             else{
-//                 completeSpeedLeft=-fabs(turnVar);
-//                 completeSpeedRight=fabs(turnVar);
-//             }
-//         }
-        
-              //Pos. values for right turn relative, Neg. for left relative
-    // }
-
- 
-     
-            
 
         if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_X))
         {
                 // Climb1.move(85);
                 // Climb2.move(-85);
-                Climb1.moveAbsolute(550, 500);
-                Climb2.moveAbsolute(-550, 500);
+                Climb1.moveAbsolute(3350, 500);
+                Climb2.moveAbsolute(-3350, 500);
             }
 
             if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_A))
@@ -592,6 +386,8 @@ void opcontrol() {
         //     Intake1.move(85);
            
         // }
+		pros::delay(20);
+
     }
 
         // if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
@@ -717,7 +513,6 @@ void opcontrol() {
         //     wtf.brake();
         //  }
 
-		pros::delay(20);
 	
 
 }
