@@ -383,24 +383,24 @@ void teleopCatapult()
     {
      bool shoot= Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_R2);
      //Have Button to prime, STOP at limit switch, and fire at a button
-     if(shoot==1 && !catapaultTouchDown.get_new_press() || !catapaultTouch.get_new_press()){
-         Catapault=80;
-         Catapault2=80;
+     if(shoot && !catapaultTouchDown.get_new_press() || !catapaultTouch.get_new_press()){
+         Catapault.controllerSet(0.63);
+         Catapault2.controllerSet(0.63);
      }
      if(catapaultTouchDown.get_value() || catapaultTouch.get_new_press()){
-         Catapault=20;
-         Catapault2=20;
+         Catapault.controllerSet(0.16);
+         Catapault2.controllerSet(0.16);
      }
      if(Garfield.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)){
-        Catapault=127;
-        Catapault2=127;
+        Catapault.controllerSet(1.0);
+        Catapault2.controllerSet(1.0);
         pros::delay(250);
-        Catapault=0;
-        Catapault2=0;
+        Catapault.controllerSet(0.0);
+        Catapault2.controllerSet(0.0);
      }
      if(Garfield.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)){
-        Catapault=20;
-        Catapault2=20;
+        Catapault.controllerSet(0.16);
+        Catapault2.controllerSet(0.16);
      }
     }
 void opcontrol() {
