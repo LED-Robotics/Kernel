@@ -56,7 +56,7 @@ bool center(bool turnDirection);
 
  * You should add more #includes here
  */
-//#include "okapi/api.hpp"
+#include "okapi/api.hpp"
 //#include "pros/api_legacy.h"
 
 void lcdAutonSelect();
@@ -74,7 +74,7 @@ void lcdRollSelect();
  */
 // using namespace pros;
 // using namespace pros::literals;
-// using namespace okapi;
+using namespace okapi;
 
 
 /**
