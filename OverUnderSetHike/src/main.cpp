@@ -118,7 +118,7 @@ void prime() {
 }
 
 void shoot (){
-  while(catapaultTouch.get_value() < 1800) {
+  while(catapaultTouch.get_value() < 2200) {
         Catapault.controllerSet(1.0);
         Catapault2.controllerSet(1.0);
     }
@@ -136,7 +136,7 @@ void Outake(int seconds){
 
 }
 
-void changeIntake(bool state) {
+void setIntake(bool state) {
     indexer.set_value(state);
     tindexr.set_value(state);
 }
@@ -152,7 +152,7 @@ void changeAlliance(int id) {
     int alliance{RED_ID};
     alliance = id;
 }
-int autonomousSelected{2};
+int autonomousSelected{0};
 bool rollForward{true};
 int alliance{RED_ID};
 
@@ -199,16 +199,36 @@ void lcdAllianceSelect() {
 }
 void left(){     
     tareAuton();
-    chassis->driveToPoint({2.3_ft, 2.0_ft});
-    tareAuton();
-    chassis->turnToAngle(90_deg);
     prime();
+    chassis->driveToPoint({1.5_ft, 0.0_ft});
+    tareAuton();
+    chassis->turnToAngle(45_deg);
+    tareAuton();
     shoot();
-
+    setIntake(true);
+    chassis->driveToPoint({3.0_ft, -0.0_ft});
+    tareAuton();
+    chassis->turnToAngle(45_deg);
+    tareAuton();
+    chassis->driveToPoint({1.0_ft, 0.0_ft});
+    tareAuton();
+    setIntake(false);
+    chassis->driveToPoint({-4.7_ft, 1.3_ft});
+    chassis->turnToAngle(0_deg);
+    tareAuton();
 }
 
 void right(){
- Outake(5);
+    tareAuton();
+    // prime();
+    chassis->driveToPoint({2.5_ft, 2.0_ft});
+    // tareAuton();
+    // chassis->turnToAngle(-45_deg);
+    // tareAuton();
+    // shoot();
+    // tareAuton();
+
+    // Outake(5);
 //  drive(1);
 //  turn(180);
 //  drive(16);
@@ -229,19 +249,13 @@ void right(){
 
 }
 void skills(){
-     //1
-     changeAlliance(BLUE_ID);
- 
-
-
-
-
+    while(true) {
+        prime();
+        shoot();
+        pros::delay(1500);
+    }
 }
 
-
-
-
-}
 void executeAutonomous() {
     switch(autonomousSelected) {
         case 0:
@@ -260,8 +274,7 @@ void executeAutonomous() {
 }
 
 void autonomous() {
-    left();
-    
+    executeAutonomous();
 }
 
 /**
@@ -297,6 +310,7 @@ void teleopCatapult()
     }
 void opcontrol() {
     // John.clear();
+    tareAuton();
     double thresh = 0.1;
     int shoot = 0;
     bool shot = false;
