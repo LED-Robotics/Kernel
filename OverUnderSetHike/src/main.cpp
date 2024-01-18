@@ -1,24 +1,26 @@
 #include "main.h"
+#include "okapi/impl/device/motor/motor.hpp"
+#include "pros/misc.h"
 using namespace okapi;
 
 using namespace std;
 
-// pros::Motor FL(20);
-// pros::Motor BL(10);
-// pros::Motor FR(11);
-// pros::Motor BR(1);
+pros::Motor FL(20);
+pros::Motor BL(10);
+pros::Motor FR(11);
+pros::Motor BR(1);
 
 std::shared_ptr<OdomChassisController> chassis =
 ChassisControllerBuilder()
 .withMotors(
-    {-10, -20}, // Left motors are 1 & 2 (reversed)
+    {-10, -19}, // Left motors are 1 & 2 (reversed)
     {1, 11}    // Right motors are 3 & 4
 )
 // Green gearset, 4 in wheel diam, 11.5 in wheel track
-.withDimensions({AbstractMotor::gearset::green, 1.0}, {{4.0_in, 17.25_in}, imev5GreenTPR})
+.withDimensions({AbstractMotor::gearset::blue, 1.0}, {{4.0_in, 17.25_in}, imev5BlueTPR})
 .withGains(
     {0.001, 0.0, 0.0000},
-    {0.002, 0.0, 0.0000},
+    {0.001, 0.0, 0.0000},
     {0.000, 0.0, 0.0000}
 )
 .withOdometry()
@@ -30,7 +32,8 @@ Motor Climb1(16, false, AbstractMotor::gearset::blue, AbstractMotor::encoderUnit
 Motor Climb2(15, false, AbstractMotor::gearset::blue, AbstractMotor::encoderUnits::degrees);
 Motor Catapault(14);
 Motor Catapault2(17);
-Motor Intake1(3);
+Motor Intake(12);
+
 // pros::Motor wtf(20);
 
 pros::ADIAnalogIn catapaultTouch{'A'};
@@ -91,12 +94,12 @@ void disabled() {}
  * starts.
  */
 
-
+// benis
 
 
 /**
  * Runs the user autonomous code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
+ * with the default priority and stack size whenever the robot is enabled via                                                                                                                                           pineapple broken 20240108_XXXX :(
  * the Field Management System or the VEX Competition Switch in the autonomous
  * mode. Alternatively, this function may be called in initialize or opcontrol
  * for non-competition testing purposes.
@@ -128,11 +131,11 @@ void shoot (){
 
 
 void intake(int seconds) {
- Intake1.controllerSet(-1.0);
+ Intake.controllerSet(-1.0);
 
 }
 void Outake(int seconds){
- Intake1.controllerSet(1.0);
+ Intake.controllerSet(1.0);
 
 }
 
@@ -199,29 +202,44 @@ void lcdAllianceSelect() {
 }
 void left(){     
     tareAuton();
-    prime();
-    chassis->driveToPoint({1.5_ft, 0.0_ft});
-    tareAuton();
-    chassis->turnToAngle(45_deg);
-    tareAuton();
-    shoot();
-    setIntake(true);
-    chassis->driveToPoint({3.0_ft, -0.0_ft});
-    tareAuton();
-    chassis->turnToAngle(45_deg);
-    tareAuton();
-    chassis->driveToPoint({1.0_ft, 0.0_ft});
-    tareAuton();
-    setIntake(false);
-    chassis->driveToPoint({-4.7_ft, 1.3_ft});
-    chassis->turnToAngle(0_deg);
-    tareAuton();
+     chassis->driveToPoint({2.7_ft, 0.000_ft});  
+
+
+    // chassis->setState({0_ft, 0_ft, 45_deg});
+    // chassis->driveToPoint({1.7_ft, -0.068_ft});  // most consistant score use as a default option if current auton is failing
+
+
+    // chassis->driveToPoint({0.09_ft, 2.50_ft});
+    // chassis->turnToAngle(55_deg);
+    // tareAuton();
+    // chassis->driveToPoint({1.72_ft, 0.0_ft});
+    // tareAuton();
+
+    // tareAuton();
+    // chassis->turnToAngle(110_deg);
+    // prime();
+    // chassis->driveToPoint({2_ft, 0.0_ft});
+    // tareAuton();
+    // chassis->turnToAngle(45_deg);
+    // tareAuton();
+    // shoot();
+    // setIntake(true);
+    // chassis->driveToPoint({3.0_ft, -0.0_ft});
+    // tareAuton();
+    // chassis->turnToAngle(30_deg);
+    // tareAuton();
+    // chassis->driveToPoint({1.0_ft, 0.0_ft});
+    // tareAuton();
+    // setIntake(false);
+    // chassis->driveToPoint({-4.7_ft, 1.3_ft});
+    // chassis->turnToAngle(0_deg);
+    // tareAuton();
 }
 
 void right(){
     tareAuton();
     // prime();
-    chassis->driveToPoint({2.5_ft, 2.0_ft});
+    chassis->driveToPoint({2.7_ft, 0.000_ft});  
     // tareAuton();
     // chassis->turnToAngle(-45_deg);
     // tareAuton();
@@ -251,8 +269,9 @@ void right(){
 void skills(){
     while(true) {
         prime();
+        pros::delay(500);
         shoot();
-        pros::delay(1500);
+        pros::delay(1000);
     }
 }
 
@@ -275,6 +294,8 @@ void executeAutonomous() {
 
 void autonomous() {
     executeAutonomous();
+    // left();
+    // right();
 }
 
 /**
@@ -302,6 +323,7 @@ void teleopCatapult()
         if(catapaultTouch.get_value() > 1800) {
             Catapault.controllerSet(0.4);
             Catapault2.controllerSet(0.4);
+            
         } else {
             Catapault.moveAbsolute(Catapault.getPosition(), 500);
             Catapault2.moveAbsolute(Catapault2.getPosition(), 500);
@@ -324,7 +346,7 @@ void opcontrol() {
     Climb1.setBrakeMode(AbstractMotor::brakeMode::coast);
     Climb2.setBrakeMode(AbstractMotor::brakeMode::coast);
     Catapault.setBrakeMode(AbstractMotor::brakeMode::coast);
-    Intake1.setBrakeMode(AbstractMotor::brakeMode::coast);  
+    Intake.setBrakeMode(AbstractMotor::brakeMode::coast);  
 
 
     while (true) {
@@ -341,8 +363,8 @@ void opcontrol() {
         {
                 // Climb1.move(85);
                 // Climb2.move(-85);
-                Climb1.moveAbsolute(3350, 500);
-                Climb2.moveAbsolute(-3350, 500);
+                Climb1.moveAbsolute(3350, 250);
+                Climb2.moveAbsolute(-3350, 250);
             }
 
             if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_A))
@@ -379,6 +401,22 @@ void opcontrol() {
          indexer.set_value(false);
          tindexr.set_value(false);
         }
+
+        if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_UP))
+        {
+            Intake.moveVelocity(127);
+        }
+
+        if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT))
+        {
+            Intake.moveVelocity(-127);
+        }
+        
+        if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN))
+        {
+            Intake.moveVelocity(0);
+        }
+
        
         teleopCatapult();
 
