@@ -19,8 +19,8 @@ ChassisControllerBuilder()
 // Green gearset, 4 in wheel diam, 11.5 in wheel track
 .withDimensions({AbstractMotor::gearset::blue, 1.0}, {{4.0_in, 17.25_in}, imev5BlueTPR})
 .withGains(
-    {0.001, 0.0, 0.0000},
-    {0.001, 0.0, 0.0000},
+    {0.0008, 0.0, 0.0000},
+    {0.0008, 0.0, 0.0000},
     {0.000, 0.0, 0.0000}
 )
 .withOdometry()
@@ -120,16 +120,23 @@ void prime() {
     Catapault2.moveAbsolute(Catapault2.getPosition(), 500);
 }
 
-void shoot (){
-  while(catapaultTouch.get_value() < 2200) {
-        Catapault.controllerSet(1.0);
-        Catapault2.controllerSet(1.0);
-    }
+void shoot (int seconds){
+  
+        Catapault.controllerSet(0.6);
+        Catapault2.controllerSet(0.6);
+    
+
+    //     Catapault.controllerSet(1.5);
+    //     Catapault2.controllerSet(1.5);
+    // }
+    // Catapault.controllerSet(0.0);
+    // Catapault2.controllerSet(0.0);
+}
+
+void DontShoot (int seconds){
     Catapault.controllerSet(0.0);
     Catapault2.controllerSet(0.0);
 }
-
-
 void intake(int seconds) {
  Intake.controllerSet(-1.0);
 
@@ -159,6 +166,16 @@ int autonomousSelected{0};
 bool rollForward{true};
 int alliance{RED_ID};
 
+void ClimbUp (){
+    Climb1.moveAbsolute(3150, 500);
+    Climb2.moveAbsolute(-3150, 500);
+}
+
+void ClimbChasisUp()
+{
+    Climb1.moveAbsolute(0, 500);
+    Climb2.moveAbsolute(0, 500);
+}
 
 void printData() {
     pros::lcd::clear_line(0);
@@ -239,7 +256,10 @@ void left(){
 void right(){
     tareAuton();
     // prime();
-    chassis->driveToPoint({2.7_ft, 0.000_ft});  
+    chassis->driveToPoint({2.5_ft, 0.000_ft}); 
+    pros::delay(500);
+    tareAuton();
+    chassis->driveToPoint({-2.5_ft, 0.000_ft}); 
     // tareAuton();
     // chassis->turnToAngle(-45_deg);
     // tareAuton();
@@ -268,10 +288,18 @@ void right(){
 }
 void skills(){
     while(true) {
-        prime();
-        pros::delay(500);
-        shoot();
-        pros::delay(1000);
+        // prime();
+        // pros::delay(250);
+        tareAuton();
+        shoot(50);
+        pros::delay(50000);
+        DontShoot(10);
+        chassis->driveToPoint({2.5_ft, -3.5_ft}); 
+        tareAuton();
+        chassis->driveToPoint({-2.0_ft, 0.0_ft}); 
+
+
+
     }
 }
 
@@ -293,9 +321,10 @@ void executeAutonomous() {
 }
 
 void autonomous() {
-    executeAutonomous();
+    // executeAutonomous();
     // left();
-    // right();
+    right();
+    // skills();
 }
 
 /**
@@ -314,6 +343,7 @@ void autonomous() {
 void teleopCatapult()
     {
     bool shoot= Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_R2);
+    bool intake= Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
     if(shoot) {
         Catapault.controllerSet(1.0);
         Catapault2.controllerSet(1.0);
@@ -328,6 +358,11 @@ void teleopCatapult()
             Catapault.moveAbsolute(Catapault.getPosition(), 500);
             Catapault2.moveAbsolute(Catapault2.getPosition(), 500);
         }
+    }
+    if(intake)
+    {
+     Catapault.controllerSet(0.0);
+     Catapault2.controllerSet(0.0);
     }
     }
 void opcontrol() {
@@ -359,15 +394,15 @@ void opcontrol() {
 
     chassisModel->arcade(y, x, driveDeadzone);
 
-        if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_X))
+        if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_UP))
         {
                 // Climb1.move(85);
                 // Climb2.move(-85);
-                Climb1.moveAbsolute(3350, 250);
-                Climb2.moveAbsolute(-3350, 250);
+                Climb1.moveAbsolute(3150, 500);
+                Climb2.moveAbsolute(-3150, 500);
             }
 
-            if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_A))
+            if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT))
             {
                 Climb1.controllerSet(0.0);
                 Climb2.controllerSet(0.0);
@@ -390,7 +425,7 @@ void opcontrol() {
         //   Climb1.move(0);
         //   Climb2.move(0); 
         // }
-        if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_Y))
+        if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_X))
         {
          indexer.set_value(true);
          tindexr.set_value(true);
@@ -402,20 +437,34 @@ void opcontrol() {
          tindexr.set_value(false);
         }
 
-        if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_UP))
+          if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_A))
         {
-            Intake.moveVelocity(127);
+         indexer.set_value(true);
+         
+        }
+          if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_Y))
+        {
+       
+         tindexr.set_value(true);
         }
 
-        if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT))
-        {
-            Intake.moveVelocity(-127);
-        }
+        // if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_UP))
+        // {
+        //     Intake.moveVelocity(127);
+        // }
+
+        // if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT))
+        // {
+        //     Intake.moveVelocity(-127);
+        // }
         
-        if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN))
-        {
-            Intake.moveVelocity(0);
-        }
+        // if(Garfield.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN))
+        // {
+        //     Intake.moveVelocity(0);
+        // }
+
+
+        
 
        
         teleopCatapult();
